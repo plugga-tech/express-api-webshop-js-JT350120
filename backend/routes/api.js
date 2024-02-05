@@ -16,7 +16,7 @@ router.get('/users', function(req, res, next) {
 
 //Get a specific user via id
 router.post('/users', function(req, res, next) {
-  req.app.locals.db.collection("users").find({_id: new ObjectId("65c0e96bc4957699d5ac238b")}).toArray()
+  req.app.locals.db.collection("users").find({_id: new ObjectId(req.body)}).toArray()
   .then(results => {
 
     console.log(results);
