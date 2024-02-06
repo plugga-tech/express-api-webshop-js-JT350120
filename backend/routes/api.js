@@ -75,7 +75,19 @@ router.get('/products/:id', function(req, res, next) {
 
   })
   
-  res.send('get specific user');
+  res.send('get specific product');
+});
+
+//Get all products
+
+router.get('/products', function(req, res, next) {
+  req.app.locals.db.collection("products").find().toArray()
+  .then(results => {
+
+    res.send(results);
+
+  })
+  //res.send('get users');
 });
 
 
