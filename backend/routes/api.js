@@ -9,12 +9,11 @@ router.get("/users", function (req, res, next) {
   req.app.locals.db
     .collection("users")
     .find()
-    .project({ password: 0 })
+    .project({ password: 0 }) //exclude passwords from results
     .toArray()
     .then((results) => {
       res.send(results);
     });
-  //res.send('get users');
 });
 
 //Get a specific user via id
@@ -50,12 +49,11 @@ router.post("/users/login", function (req, res, next) {
     .toArray()
     .then((result) => {
       if (result == "") {
-        console.log("Fel uppgifter");
+        res.send("Fel uppgifter");
       } else {
-        console.log("Inloggad som " + result[0].name);
+        res.send("Inloggad som " + result[0].name);
       }
     });
-  res.send("get specific user");
 });
 
 //Create a new product
@@ -78,13 +76,12 @@ router.get("/products/:id", function (req, res, next) {
     .toArray()
     .then((result) => {
       if (result == "") {
-        console.log("Produkten med ID " + req.params.id + " finns inte!");
+        res.send("Produkten med ID " + req.params.id + " finns inte!");
       } else {
-        console.log(result);
+        res.send(result);
       }
     });
 
-  res.send("get specific product");
 });
 
 //Get all products
@@ -98,5 +95,48 @@ router.get("/products", function (req, res, next) {
       res.send(results);
     });
 });
+
+//Place an order for a specific user
+
+router.post("/orders/add", function (req, res, next) {
+  req.app.locals.db
+  .collection("users")
+  .find({ _id: new ObjectId(req.body.user)})
+  .toArray()
+  .then((result) => {
+    if (result == "") {
+
+      res.send("Kunde inte lägga order. Användaren finns inte.");
+
+    } else {
+
+      let products = req.body.products;
+
+      for (let i = 0; i < products.length; i++) {
+
+        let amount = products[i].quantity;
+        let amountLeft; 
+
+        req.app.locals.db
+        .collection("products")
+        .find({ _id: new ObjectId(products[i].productId)})
+        .toArray()
+        .then((result) => {
+          amountLeft = result[0].lager -= amount;
+          req.app.locals.db
+          .collection("products")
+          .updateOne({ _id: new ObjectId(products[i].productId)}, {$set: {"lager": amountLeft}})
+          .then((result) => {
+            console.log(result);
+          });
+        });
+      }
+      
+      res.send("Tack för din beställning " + result[0].name + "!")
+      
+    }
+  });
+});
+
 
 module.exports = router;
