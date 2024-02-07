@@ -81,7 +81,6 @@ router.get("/products/:id", function (req, res, next) {
         res.send(result);
       }
     });
-
 });
 
 //Get all products
@@ -100,43 +99,41 @@ router.get("/products", function (req, res, next) {
 
 router.post("/orders/add", function (req, res, next) {
   req.app.locals.db
-  .collection("users")
-  .find({ _id: new ObjectId(req.body.user)})
-  .toArray()
-  .then((result) => {
-    if (result == "") {
+    .collection("users")
+    .find({ _id: new ObjectId(req.body.user) })
+    .toArray()
+    .then((result) => {
+      if (result == "") {
+        res.send("Kunde inte lägga order. Användaren finns inte.");
+      } else {
+        let products = req.body.products;
 
-      res.send("Kunde inte lägga order. Användaren finns inte.");
+        for (let i = 0; i < products.length; i++) {
+          let amount = products[i].quantity;
+          let amountLeft;
 
-    } else {
-
-      let products = req.body.products;
-
-      for (let i = 0; i < products.length; i++) {
-
-        let amount = products[i].quantity;
-        let amountLeft; 
-
-        req.app.locals.db
-        .collection("products")
-        .find({ _id: new ObjectId(products[i].productId)})
-        .toArray()
-        .then((result) => {
-          amountLeft = result[0].lager -= amount;
           req.app.locals.db
-          .collection("products")
-          .updateOne({ _id: new ObjectId(products[i].productId)}, {$set: {"lager": amountLeft}})
-          .then((result) => {
-            console.log(result);
-          });
-        });
-      }
-      
-      res.send("Tack för din beställning " + result[0].name + "!")
-      
-    }
-  });
-});
+            .collection("products")
+            .find({ _id: new ObjectId(products[i].productId) })
+            .toArray()
+            .then((result) => {
+              amountLeft = result[0].lager -= amount;
+              req.app.locals.db
 
+                .collection("products")
+                .updateOne(
+                  { _id: new ObjectId(products[i].productId) },
+                  { $set: { lager: amountLeft } }
+                )
+                .then((result) => {
+                  console.log(result);
+                });
+            });
+        }
+
+        res.send("Tack för din beställning " + result[0].name + "!");
+      }
+    });
+});
 
 module.exports = router;
