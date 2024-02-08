@@ -131,6 +131,15 @@ router.post("/orders/add", function (req, res, next) {
             });
         }
 
+        //Lägg in en order som document i collection "orders"
+
+        req.app.locals.db
+        .collection("orders")
+        .insertOne(req.body)
+        .then((result) => {
+          console.log(result);
+        });
+
         res.send("Tack för din beställning " + result[0].name + "!");
       }
     });
