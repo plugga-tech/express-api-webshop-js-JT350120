@@ -145,4 +145,16 @@ router.post("/orders/add", function (req, res, next) {
     });
 });
 
+//Get all placed orders
+
+router.get("/orders/all", function (req, res, next) {
+  req.app.locals.db
+    .collection("orders")
+    .find()
+    .toArray()
+    .then((results) => {
+      res.send(results);
+    });
+});
+
 module.exports = router;
